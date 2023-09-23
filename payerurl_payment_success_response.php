@@ -1,2 +1,132 @@
-<?php // This response will be POSTed to the notify_url of the payment request /**********Do not share the credencials*********/ // get your API key : https://dashboard.payerurl.com/profile/api-management $payerurl_public_key = ''; $payerurl_secret_key = ''; /***********************************************/ if(!isset($_SERVER['HTTP_AUTHORIZATION']) || empty($_SERVER['HTTP_AUTHORIZATION'])) { $authStr = base64_decode($_POST['authStr']); $auth = explode(':', $authStr); } else { $authStr = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION']); $authStr = base64_decode($authStr); $auth = explode(':', $authStr); } $GETDATA = [ 'order_id' => $_POST['order_id'], 'ext_transaction_id' => isset($_POST['ext_transaction_id']) ? $_POST['ext_transaction_id'] : '', 'transaction_id' => $_POST['transaction_id'], 'status_code' => isset($_POST['status_code']) ? (int)$_POST['status_code'] : '', 'note' => isset($_POST['note']) ? $_POST['note'] : '', 'confirm_rcv_amnt' => isset($_POST['confirm_rcv_amnt']) ? (float)$_POST['confirm_rcv_amnt'] : 0, 'confirm_rcv_amnt_curr' => isset($_POST['confirm_rcv_amnt_curr']) ? $_POST['confirm_rcv_amnt_curr'] : '', 'coin_rcv_amnt' => isset($_POST['coin_rcv_amnt']) ? (float)$_POST['coin_rcv_amnt'] : 0, 'coin_rcv_amnt_curr' => isset($_POST['coin_rcv_amnt_curr']) ? $_POST['coin_rcv_amnt_curr'] : '', 'txn_time' => isset($_POST['txn_time']) ? $_POST['txn_time'] : '' ]; ksort($GETDATA); $args = http_build_query($GETDATA); $signature = hash_hmac('sha256', $GETDATA, $payerurl_secret_key); $authStr = base64_encode(sprintf('%s:%s', $payerurl_public_key, $signature));
-//if($signature != $auth[1]) //{ //$data = [ 'status' => 2030,'message' => "Signature not matched"]; //header('Content-Type: application/json; charset=utf-8'); //echo json_encode($data); //exit(); //} $data =""; //if($payerurl_public_key != $auth[0]) //{ // $data = [ 'status' => "Public key doesn\'t match"]; //} //else if (!isset($GETDATA['transaction_id']) || empty($GETDATA['transaction_id'])) //{ // $data = [ 'status' => 2050,'message' => "Transaction ID not found"]; //} //else if (!isset($GETDATA['order_id']) || empty($GETDATA['order_id'])) //{ // $data = [ 'status' => 2050,'message' => "Order ID not found"]; //} //else if($GETDATA['status_code'] == 20000) //{ // $data = [ 'status' => 20000,'message' => "Order Cancelled"]; //} //else{ $data = [ 'status' => 2040,'message' => "Order updated successfuly"]; ///////////// YOUR CODE HERE /////////////////////////// // //make you order update all the security check is done // ///////////// YOUR CODE HERE /////////////////////////// //} header('Content-Type: application/json; charset=utf-8'); echo json_encode($data); exit(); ?>
+<?php
+ 
+/**
+ * Pyerurl will send a POST request to notify_url from payment request
+ * Add this below code to your callback page
+ */
+ 
+/**
+ * Payerurl API credentials
+ */
+
+$payerurl_public_key = 'de1e85e8a087fed83e4a3ba9dfe36f08';  // this credencials open for public
+$payerurl_secret_key = '0a634fc47368f55f1f54e472283b3acd'; // this credencials open for public
+ 
+$headers = getallheaders();
+$auth ="";
+
+if ($headers === false || !array_key_exists('Authorization', $headers)) {
+    /////////////  YOUR CODE HERE   ///////////////////////////
+	
+	$authStr_post = base64_decode($_POST['authStr']);
+    $auth = explode(':', $authStr_post);
+
+} else
+{
+	$authStr = str_replace('Bearer ', '', $headers['Authorization']);
+	$authStr = base64_decode($authStr);
+	$auth = explode(':', $authStr);
+}
+ 
+
+
+
+if ($payerurl_public_key != $auth[0]) {
+    /////////////  YOUR CODE HERE   ///////////////////////////
+    $data = ['status' => 2030, 'message' => 'Public key doesn\'t match'];
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data);
+    exit();
+}
+
+
+ 
+$GETDATA = [
+    'order_id' => $_POST['order_id'],
+    'ext_transaction_id' => $_POST['ext_transaction_id'],
+    'transaction_id' => $_POST['transaction_id'],
+    'status_code' => $_POST['status_code'],
+    'note' => $_POST['note'],
+    'confirm_rcv_amnt' => $_POST['confirm_rcv_amnt'],
+    'confirm_rcv_amnt_curr' => $_POST['confirm_rcv_amnt_curr'],
+    'coin_rcv_amnt' => $_POST['coin_rcv_amnt'],
+    'coin_rcv_amnt_curr' => $_POST['coin_rcv_amnt_curr'],
+    'txn_time' => $_POST['txn_time']
+];
+ 
+if (!isset($GETDATA['transaction_id']) || empty($GETDATA['transaction_id'])) {
+    /////////////  YOUR CODE HERE   ///////////////////////////
+    $data = ['status' => 2050, 'message' => "Transaction ID not found"];
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data);
+    exit();
+}
+ 
+if (!isset($GETDATA['order_id']) || empty($GETDATA['order_id'])) {
+    /////////////  YOUR CODE HERE   ///////////////////////////
+    $data = ['status' => 2050, 'message' => "Order ID not found"];
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data);
+    exit();
+}
+ 
+if ($GETDATA['status_code'] == 20000) {
+    /////////////  YOUR CODE HERE   ///////////////////////////
+    $data = ['status' => 20000, 'message' => "Order Cancelled"];
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data);
+    exit();
+}
+ 
+if ($GETDATA['status_code'] != 200) {
+    /////////////  YOUR CODE HERE   ///////////////////////////
+    $data = ['status' => 2050, 'message' => "Order not complete"];
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data);
+    exit();
+}
+
+
+//****************** ADVANCE SECURITY CHECK  ***********************//
+//ksort($GETDATA);
+//$args = http_build_query($GETDATA);
+//$signature = hash_hmac('sha256', $GETDATA, $payerurl_secret_key);
+//if (!hash_equals($signature, $auth[1])) {
+//    $data = ['status' => 2030, 'message' => "Signature not matched"];
+//    header('Content-Type: application/json; charset=utf-8');
+//    echo json_encode($data);
+//    exit();
+//}
+//********************** ADVANCE SECURITY CHECK  *******************//
+
+
+ 
+$data = ['status' => 2040, 'message' => $GETDATA];
+
+/////////////  YOUR CODE HERE   ///////////////////////////
+//
+//
+//
+//
+//
+//
+// change your order status
+// all the security check is done
+//
+//
+//
+//
+//
+///////////// YOUR CODE HERE ///////////////////////////
+
+
+$filename = "payerurl.log";
+$fh = fopen($filename, "a");
+fwrite($fh, json_encode($data));
+fclose($fh); 
+ 
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode($data);
+exit();
+ 
+?>

@@ -1,1 +1,116 @@
-<?php $invoiceid =12345; $amount =123; $currency ='usd'; $billing_fname ='First name'; $billing_lname ='Last name'; $billing_email ='test@email.com'; $redirect_to = 'This is checkout url/cancel url/return back to the checkout page/'; $notify_url = 'response url/callback url/ customer already made payment we send response on this url'; /**********Do not share the credencials*********/ // get your API key : https://test.payerurl.com/profile/api-management $payerurl_secret_key=''; $payerurl_public_key=''; /***********************************************/ $items = array( 'name' => empty($PARAMS['description']) ? "":trim($PARAMS['description']), 'qty' => 1, 'price' => $invoicetotal, ); $args = [ 'order_id' => $invoiceid, //[required field] [String] [Merchant order ID/ Invoice ID] 'amount' => $amount, 'items' => [0 => $items ], //[required field] [String] [Price of the product] 'currency' => empty($currency)? "usd" : strtolower($currency), //[required field] [String] [Currency of the price of the product] 'billing_fname' => empty($billing_fname) ? "undefine":$billing_fname, //[Optional field] [String] [Customer billing first name] 'billing_lname' => empty($billing_lname) ? "undefine":$billing_lname, //[Optional field] [String] [Customer billing last name] 'billing_email' => empty($billing_email) ? "undefine@email.com" : $billing_email, //[Optional field] [String] [Customer billing email] 'redirect_to' => $redirect_to, //[required field] [String] [After making a purchase, go back to the merchant's website endpoint] 'notify_url' => $notify_url, //[required field] [String] [After making a purchase, send notification with payment details] 'type' => 'php', //[required field] [String] [The way of the customer request] ]; ksort($args); $args = http_build_query($args); //var_dump($args); $signature = hash_hmac('sha256', $args, $payerurl_secret_key); //[required field] [Merchant secret key] $authStr = base64_encode(sprintf('%s:%s', $payerurl_public_key, $signature)); //[required field] [Merchant public key] //var_dump($authStr); $ch = curl_init(); curl_setopt($ch, CURLOPT_URL, 'https://test.payerurl.com/api/payment'); curl_setopt($ch, CURLOPT_POST, TRUE); curl_setopt($ch, CURLOPT_HEADER, FALSE); curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE); curl_setopt($ch, CURLOPT_POSTFIELDS, $args); curl_setopt($ch, CURLOPT_HTTPHEADER, [ 'Content-Type:application/x-www-form-urlencoded;charset=UTF-8', 'Authorization:' . sprintf('Bearer %s', $authStr), ]); $response = curl_exec($ch); $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch); $response = json_decode($response); //var_dump($response); if($httpCode === 200 && isset($response->redirectTO) && !empty($response->redirectTO)){ echo "<script> location.replace('".$response->redirectTO."'); </script> "; } ?>
+<?php
+/**
+ * unique order ID, this order number must be unique.
+ */
+$invoiceid = floor(microtime(true) * 1000);
+ 
+/**
+ * Order Total Amount
+ */
+$amount = 123;
+ 
+/**
+ * Order amount currency
+ */
+$currency = 'usd';
+ 
+/**
+ * Billing user info
+ */
+$billing_fname = 'First name';
+$billing_lname = 'Last name';
+$billing_email = 'test@email.com';
+ 
+/**
+ * After successful payment customer will redirect to this url.
+ */
+$redirect_to = 'http://localhost/pt/payerurl_payment_success.php';
+
+
+
+ 
+/*****
+**** THIS IS VERY IMPORTANT VARIABLE *******************
+ * Response URL/cancel URL/ Callback URL/ our system will only send response to this url
+ *****/
+$notify_url = 'https://anycodeunlock.com/sohel/payerurl_payment_response.php';
+//Note: It is the web address for our server's payerurl_payment_response.php file.
+ 
+/**
+ * If you user cancel any payment, user will redirect to cancel url
+ */
+$cancel_url = 'http://localhost/pt/payerurl_payment_cancel.php';
+ 
+/**
+ * Payerurl API credentials
+ * Do not share the credentials
+ * Get your API key : https://dashboard.payerurl.com/profile/api-management 
+ */
+
+$payerurl_public_key = 'de1e85e8a087fed83e4a3ba9dfe36f08';  // this credencials open for public
+$payerurl_secret_key = '0a634fc47368f55f1f54e472283b3acd'; // this credencials open for public
+ 
+/**
+ * Order items
+ */
+$items = [
+    [
+        'name' => 'Order item name',
+        'qty' => 'Order item quantity',
+        'price' => '123',
+    ]
+];
+ 
+/**
+ * API params
+ */
+$args = [
+    'order_id' => $invoiceid,
+    'amount' => $amount,
+    'items' => $items,
+    'currency' => $currency,
+    'billing_fname' => $billing_fname,
+    'billing_lname' => $billing_lname,
+    'billing_email' => $billing_email,
+    'redirect_to' => $redirect_to,
+    'notify_url' => $notify_url,
+    'cancel_url' => $cancel_url,
+    'type' => 'php',
+];
+ 
+/**
+ * Generate signature
+ */
+ksort($args);
+$args = http_build_query($args);
+$signature = hash_hmac('sha256', $args, $payerurl_secret_key);
+$authStr = base64_encode(sprintf('%s:%s', $payerurl_public_key, $signature));
+ 
+/**
+ * Send API response
+ */
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'https://test.payerurl.com/api/payment');
+curl_setopt($ch, CURLOPT_POST, TRUE);
+curl_setopt($ch, CURLOPT_HEADER, FALSE);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-Type:application/x-www-form-urlencoded;charset=UTF-8',
+    'Authorization:' . sprintf('Bearer %s', $authStr),
+]);
+ 
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+ 
+$response = json_decode($response);
+ 
+/**
+ * Redirect user to payerurl payment page
+ */
+if ($httpCode === 200 && isset($response->redirectTO) && !empty($response->redirectTO)) {
+    header('Location: ' . $response->redirectTO);
+}
+exit();
+?>

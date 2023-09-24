@@ -33,7 +33,7 @@ $redirect_to = 'http://localhost/pt/payerurl_payment_success.php';
 **** THIS IS VERY IMPORTANT VARIABLE *******************
  * Response URL/cancel URL/ Callback URL/ our system will only send response to this url
  *****/
-$notify_url = 'https://anycodeunlock.com/sohel/payerurl_payment_response.php';
+$notify_url = 'https://test.payerurl.com/payerurl_payment_response.php';
 //Note: It is the web address for our server's payerurl_payment_response.php file.
  
 /**

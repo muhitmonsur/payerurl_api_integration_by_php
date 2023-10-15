@@ -1,4 +1,4 @@
-# Crypto currency payment gateway integration by PHP, customer payments receive in merchant wallet account,no middleware.  
+# Integration of a cryptocurrency payment system using PHP, where customer payments get received instantly into the merchant wallet account.  
 
 The payerurl_payment_request.php is required to be setting up and making a request to the Payerurl API for processing a payment. It's designed to generate a unique order ID, specify order details, create a digital signature for authentication, send the payment request to the Payerurl API, and then redirect the user to the Payerurl payment page if the request is successful. Here's a breakdown of what the code does:
  1 It generates a unique order ID ($invoiceid) based on the current timestamp.

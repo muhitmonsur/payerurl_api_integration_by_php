@@ -8,9 +8,9 @@ This PHP file is responsible for initiating a payment request to the Payerurl cr
 | $invoiceid | unique order ID, this order number must be unique |
 | $amount | Order Total Amount |
 | $currency | Order amount currency |
-| $redirect_to | After successful payment customer will redirect to this url. |
-| $notify_url | Response URL/cancel URL/ Callback URL/ our system will only send response to this url. |
-| $cancel_url | If you user cancel any payment, user will redirect to cancel url |
+| $redirect_to | After successful payment customer will redirect to this url.(Thank you page/ order receive page) |
+| $notify_url | Response URL/cancel URL/ Callback URL/ our system will only send response to this url. (write your success function on the page)|
+| $cancel_url | If you user cancel any payment, user will redirect to cancel url (Checkout page)|
 | $payerurl_public_key and $payerurl_secret_key | Payerurl API credentials|
 | $$items | Defines the order items in the `$items` array, including the item name, quantity, and price |
 

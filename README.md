@@ -1,7 +1,7 @@
 # Integration of a cryptocurrency payment system using PHP, where customer payments get received instantly into the merchant wallet account.
 --------------------------------------------------------------------------------------------------------------------------------------------
 # payerurl_payment_request.php
-This PHP file is responsible for initiating a payment request to the Payerurl payment gateway.
+This PHP file is responsible for initiating a payment request to the Payerurl crypto currency payment gateway.
 
 | Variable | Description |
 | --- | --- |

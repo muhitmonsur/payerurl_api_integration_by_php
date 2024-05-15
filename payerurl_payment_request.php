@@ -44,7 +44,7 @@ $cancel_url = 'http://localhost/pt/payerurl_payment_cancel.php';
 /**
  * Payerurl API credentials
  * Do not share the credentials
- * Get your API key : https://dashboard.payerurl.com/profile/api-management 
+ * Get your API key : https://test.payerurl.com/profile/api-management 
  */
 
 $payerurl_public_key = 'de1e85e8a087fed83e4a3ba9dfe36f08';  // this credencials open for public

@@ -55,7 +55,7 @@ $payerurl_secret_key = '0a634fc47368f55f1f54e472283b3acd'; // this credencials o
  */
 $items = [
     [
-        'name' => 'Order item name',
+        'name' => str_replace(' ', '_', 'Order item name'), // Replace spaces with '_'
         'qty' => 'Order item quantity',
         'price' => '123',
     ]

@@ -31,10 +31,13 @@ $redirect_to = 'http://localhost/pt/payerurl_payment_success.php';
  
 /*****
 **** THIS IS VERY IMPORTANT VARIABLE *******************
- * Response URL/cancel URL/ Callback URL/ our system will only send response to this url
+ * Response URL/Callback URL our system will only send response to this url
  *****/
+
+
+//Note: after payment complete our system automatically sent payment detail on this notify_url in few seconds.
 $notify_url = 'https://test.payerurl.com/payerurl_payment_response.php';
-//Note: It is the web address for our server's payerurl_payment_response.php file.
+
  
 /**
  * If you user cancel any payment, user will redirect to cancel url

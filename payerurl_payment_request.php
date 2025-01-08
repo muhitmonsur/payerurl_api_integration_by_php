@@ -7,12 +7,12 @@ $invoiceid = floor(microtime(true) * 1000);
 /**
  * Order Total Amount
  */
-$amount = 123;
+$amount = 123;  //integer value
  
 /**
  * Order amount currency
  */
-$currency = 'usd';
+$currency = 'usd';  // currency in small letter
  
 /**
  * Billing user info
@@ -24,7 +24,7 @@ $billing_email = 'test@email.com';
 /**
  * After successful payment customer will redirect to this url.
  */
-$redirect_to = 'http://localhost/pt/payerurl_payment_success.php';
+$redirect_to = 'http://localhost/pt/payerurl_payment_success.php'; //(order receive page)
 
 
 
@@ -36,13 +36,13 @@ $redirect_to = 'http://localhost/pt/payerurl_payment_success.php';
 
 
 //Note: after payment complete our system automatically sent payment detail on this notify_url in few seconds.
-$notify_url = 'https://test.payerurl.com/payerurl_payment_response.php';
+$notify_url = 'https://test.payerurl.com/payerurl_payment_response.php';  //(system will sent payment info in this page)
 
  
 /**
  * If you user cancel any payment, user will redirect to cancel url
  */
-$cancel_url = 'http://localhost/pt/payerurl_payment_cancel.php';
+$cancel_url = 'http://localhost/pt/payerurl_payment_cancel.php'; //(checkout page)
  
 /**
  * Payerurl API credentials
@@ -50,15 +50,15 @@ $cancel_url = 'http://localhost/pt/payerurl_payment_cancel.php';
  * Get your API key : https://test.payerurl.com/profile/api-management 
  */
 
-$payerurl_public_key = 'de1e85e8a087fed83e4a3ba9dfe36f08';  // this credencials open for public
-$payerurl_secret_key = '0a634fc47368f55f1f54e472283b3acd'; // this credencials open for public
+$payerurl_public_key = 'your_payeurl_api_key';  // this credencials open for public
+$payerurl_secret_key = 'your_payeurl_secret_key'; // this credencials open for public
  
 /**
  * Order items
  */
 $items = [
     [
-        'name' => str_replace(' ', '_', 'Order item name'), // Replace spaces with '_'
+        'name' => str_replace(' ', '_', 'Order item name'), // Replace spaces with '_' , no space allowed
         'qty' => 'Order item quantity',
         'price' => '123',
     ]
@@ -68,16 +68,16 @@ $items = [
  * API params
  */
 $args = [
-    'order_id' => $invoiceid,
-    'amount' => $amount,
-    'items' => $items,
-    'currency' => $currency,
+    'order_id' => $invoiceid,  // must be unique
+    'amount' => $amount, //integer value
+    'items' => $items, 
+    'currency' => $currency,  // currency in small letter
     'billing_fname' => $billing_fname,
     'billing_lname' => $billing_lname,
     'billing_email' => $billing_email,
-    'redirect_to' => $redirect_to,
-    'notify_url' => $notify_url,
-    'cancel_url' => $cancel_url,
+    'redirect_to' => $redirect_to,  //After successful payment customer will redirect to this url.(order receive page)
+    'notify_url' => $notify_url,  //After payment complete our system automatically sent payment detail on this notify_url in few seconds.(system will sent payment info in this page)
+    'cancel_url' => $cancel_url,  //If you user cancel any payment, user will redirect to cancel url.(checkout page)
     'type' => 'php',
 ];
  

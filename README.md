@@ -5,9 +5,6 @@
 ###### Handles the payment process with PayerURL API and redirects the customer to the payment page.
 
 ## ✅ Required Parameters
-
-Name | Type | Required | Description
-
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | $invoiceId | string | ✅ | Unique invoice or order ID. |

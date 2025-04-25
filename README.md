@@ -1,48 +1,91 @@
-# Integration of a cryptocurrency payment system using PHP, where customer payments get received instantly into the merchant wallet account.
---------------------------------------------------------------------------------------------------------------------------------------------
-# payerurl_payment_request.php
-This PHP file is responsible for initiating a payment request to the Payerurl crypto currency payment gateway.
+## 💳 PayerURL Payment Integration – PHP
+###### This method allows you to integrate with the PayerURL Payment Gateway using a simple PHP function. It's designed for systems where server-to-server communication is preferred over frontend SDKs.
 
-| Variable | Description |
-| --- | --- |
-| $invoiceid | unique order ID, this order number must be unique |
-| $amount | Order Total Amount |
-| $currency | Order amount currency |
-| $redirect_to | After successful payment customer will redirect to this url.(Thank you page/ order receive page) |
-| $notify_url | Response URL/cancel URL/ Callback URL/ our system will only send response to this url. (write your success function on the page)|
-| $cancel_url | If you user cancel any payment, user will redirect to cancel url (Checkout page)|
-| $payerurl_public_key and $payerurl_secret_key | Payerurl API credentials|
-| $$items | Defines the order items in the `$items` array, including the item name, quantity, and price |
+## 📌 Function: payment($invoiceId, $amount, $currency = 'usd', $data)
+###### Handles the payment process with PayerURL API and redirects the customer to the payment page.
 
-1. It generates a unique order ID (`$invoiceid`) based on the current timestamp.
-2. It sets the order total amount (`$amount`), currency (`$currency`), and billing user information.
-3. Defines the redirect URL after a successful payment (`$redirect_to`), the notification URL for receiving payment responses (`$notify_url`), and the cancel URL in case the user cancels the payment (`$cancel_url`).
-4. Specifies the Payerurl API credentials, including the public key (`$payerurl_public_key`) and secret key (`$payerurl_secret_key`). These keys are used for authentication with the Payerurl API.
-5. Defines the order items in the `$items` array, including the item name, quantity, and price.
-6. Constructs the API request parameters by sorting them, building an HTTP query string, and generating a digital signature using HMAC-SHA256.
-7. Sends a POST request to the Payerurl API with the constructed parameters and the authorization header.
-8. Processes the API response, which includes a redirect URL to the Payerurl payment page.
-9. If the response is successful (HTTP status code 200) and contains a valid redirect URL, it redirects the user to the Payerurl payment page.
-Please note you must have set up the Payerurl API key correctly and have obtained the API credentials and endpoint URLs as mentioned in the comments. Also, make sure you handle any potential error scenarios and exceptions that may occur during the API request and response handling.
+## ✅ Required Parameters
 
-# payerurl_payment_response.php
-The `payerurl_payment_response.php` is a callback or response script that handles notifications and responses from the Payerurl payment gateway. Here's a summary of what this script does:
-1. It begins by defining Payerurl API credentials, including the public and secret keys, for authentication.
-2. The script checks for the presence of an "Authorization" header in the HTTP request. If the header is not present, it attempts to extract authorization information from the POST data.
-3. It verifies the public key from the authorization header (or POST data) and compares it with the stored public key. If they do not match, an error response is sent.
-4. The script then collects various data from the POST request, including order ID, external transaction ID, transaction ID, status code, notes, and various other transaction details.
-5. It checks if a transaction ID is present and not empty. If the transaction ID is missing, it sends an error response.
-6. It also checks if an order ID is present and not empty. If the order ID is missing, it sends an error response.
-7. Depending on the status code received in the response, the script takes different actions. If the status code indicates a canceled order, it sends a response indicating the order is canceled. If the status code is not 200, it sends a response indicating the order is not complete.
-8. After all security checks and processing, the script constructs a response with a status code and a message, which includes the transaction data. It also logs this data to a file named "payerurl.log."
-9. Finally, the script sends a JSON response with the status code and message back to the calling system.
-In summary, this PHP script is designed to handle callback notifications from the Payerurl payment gateway. It performs various security checks and processes the transaction data, logging it and sending a JSON response back to the calling system based on the transaction's status code.
+Name | Type | Required | Description
 
-# The 'payerurl_payment_success.php' to be called upon a successful payment.
-# The 'payerurl_payment_cancel.php' to be called when a payment is canceled by the user.
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| $invoiceId | string | ✅ | Unique invoice or order ID. |
+| $amount | int | ✅ | Payment amount (in smallest currency unit, e.g., cents). |
+| $currency | string | ❌ | Currency code (e.g., usd, bdt). Default: usd. |
+| $data | array | ✅ | Contains customer info, redirect URLs, and API credentials. |
 
-In summary, these PHP files work together to facilitate online payments through the Payerurl payment gateway. 
-The `payerurl_payment_request.php` initiates the payment request,
-`payerurl_payment_response.php` handles responses and notifications, 
-`payerurl_payment_success.php` is a success page, and `payerurl_payment_cancel.php` is a cancellation page.
- 
+
+## 🔑 $data Array Structure
+
+~~~php
+$data = [
+    'first_name'   => 'John',             // Optional
+    'last_name'    => 'Doe',              // Optional
+    'email'        => 'john@example.com', // Optional
+    'redirect_url' => 'https://yourdomain.com/payment-success',
+    'notify_url'   => 'https://yourdomain.com/api/payment-notify',
+    'cancel_url'   => 'https://yourdomain.com/checkout',
+    'public_key'   => 'your_public_key',
+    'secret_key'   => 'your_secret_key',
+];
+~~~
+
+## 🔑GET API KEY
+Get your API key : https://dash.payerurl.com/profile/get-api-credentials
+<img src="https://raw.githubusercontent.com/RashiqulRony/rony.mmj/refs/heads/master/payerurl.png">
+
+
+
+## 🚀 How It Works
+1. Collect user and order info on your platform.
+2. Call the payment() function with required details.
+3. User is redirected to PayerURL payment page.
+4. After payment:
+    * User is redirected to redirect_url.
+    * Your backend receives a callback at notify_url with transaction details.
+    * On cancellation, user is returned to cancel_url.
+
+
+## 🔐 Authentication
+Authentication is done via HMAC SHA256 signature using your secret key. The request is then base64-encoded and added as a Bearer token.
+
+
+## 🧪 Sample Usage
+###### Download `PayerUrlRequest.php` Class and using your any php project. Example: 
+
+~~~php
+require_once 'PayerUrlRequest.php';
+$request = new PayerUrlRequest();
+
+$invoiceId = 'INV-1001';
+$amount = 1000; // $10.00
+$currency = 'usd';
+
+$data = [
+    'first_name' => 'Alice',
+    'last_name' => 'Smith',
+    'email' => 'alice@example.com',
+    'redirect_url' => 'https://yoursite.com/payment-success',
+    'notify_url' => 'https://yoursite.com/api/payment-notify',
+    'cancel_url' => 'https://yoursite.com/cart',
+    'public_key' => 'pk_live_xxxxxx',
+    'secret_key' => 'sk_live_xxxxxx',
+];
+
+$request->payment($invoiceId, $amount, $currency, $data);
+~~~
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -76,7 +76,7 @@ $args = [
     'billing_lname' => $billing_lname,
     'billing_email' => $billing_email,
     'redirect_to' => $redirect_to,  //After successful payment customer will redirect to this url.(order receive page)
-    'notify_url' => $notify_url,  //After payment complete our system automatically sent payment detail on this notify_url in few seconds.(system will sent payment info in this page)
+    'notify_url' => $notify_url,  // PayerURL will send a callback to this URL once the payment is successfully completed.
     'cancel_url' => $cancel_url,  //If you user cancel any payment, user will redirect to cancel url.(checkout page)
     'type' => 'php',
 ];

@@ -17,7 +17,7 @@ class PayerUrlRequest
 
             // Redirect URLs
             $redirectUrl = $data['redirect_url'] ?? null;
-            $notifyUrl   = $data['notify_url'] ?? null;
+            $notifyUrl   = $data['notify_url'] ?? null;  // PayerURL will send a callback to this URL once the payment is successfully completed.
             $cancelUrl   = $data['cancel_url'] ?? null;
 
             if (!$redirectUrl || !$notifyUrl || !$cancelUrl) {

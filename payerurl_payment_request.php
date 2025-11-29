@@ -59,8 +59,8 @@ $payerurl_secret_key = 'your_payeurl_secret_key'; // this credencials open for p
 $items = [
     [
         'name' => str_replace(' ', '_', 'Order item name'), // Replace spaces with '_' , no space allowed
-        'qty' => 'Order item quantity', // must be string
-        'price' => '123', // must be string
+        'qty' =>  (string) 'Order item quantity', // must be string
+        'price' =>  (string) '123', // must be string
     ]
 ];
  
@@ -69,7 +69,7 @@ $items = [
  */
 $args = [
     'order_id' => $invoiceid,  // must be unique
-    'amount' => $amount, //integer value
+    'amount' => $amount, //float value
     'items' => $items, 
     'currency' => strtolower(trim((string) $currency)),  // currency in small letter
     'billing_fname' => $billing_fname,

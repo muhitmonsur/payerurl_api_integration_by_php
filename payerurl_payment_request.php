@@ -7,7 +7,7 @@ $invoiceid = floor(microtime(true) * 1000);
 /**
  * Order Total Amount
  */
-$amount = 123;  //integer value
+$amount = 123.00;  //float value
  
 /**
  * Order amount currency

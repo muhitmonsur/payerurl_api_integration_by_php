@@ -7,7 +7,7 @@ $invoiceid = floor(microtime(true) * 1000);
 /**
  * Order Total Amount
  */
-$amount = 123.00;  //float value
+$amount = 120.00;  //float value
  
 /**
  * Order amount currency
@@ -59,8 +59,8 @@ $payerurl_secret_key = 'your_payeurl_secret_key'; // this credencials open for p
 $items = [
     [
         'name' => str_replace(' ', '_', 'Order item name'), // Replace spaces with '_' , no space allowed
-        'qty' =>  (string) '1', // integer
-        'price' =>  (string) '123.00', // float value
+        'qty' =>  (string) '10', // integer
+        'price' =>  (string) '12.00', // float value
     ]
 ];
  

@@ -59,8 +59,8 @@ $payerurl_secret_key = 'your_payeurl_secret_key'; // this credencials open for p
 $items = [
     [
         'name' => str_replace(' ', '_', 'Order item name'), // Replace spaces with '_' , no space allowed
-        'qty' =>  (string) 'Order item quantity', // must be string
-        'price' =>  (string) '123', // must be string
+        'qty' =>  (string) '1', // integer
+        'price' =>  (string) '123.00', // float value
     ]
 ];
  

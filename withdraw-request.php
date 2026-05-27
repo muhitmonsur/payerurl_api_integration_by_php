@@ -7,8 +7,8 @@
 
 // ── Configuration ──────────────────────────────────────────────
 const PAYERURL_API_URL   = 'https://api-v2.payerurl.com/api/withdraw-request-public';
-const PAYERURL_PUBLIC_KEY = 'fb113485f41655559c50151caa7793fe';
-const PAYERURL_SECRET_KEY = '16a351ba29da3f928e3767e67fa35aac';
+const PAYERURL_PUBLIC_KEY = 'your payerurl api key';
+const PAYERURL_SECRET_KEY = 'your payerurl secret key';
 
 /**
  * Supported coin networks:

@@ -1,78 +1,228 @@
-## 💳 PayerURL Payment Integration – PHP
-###### This method allows you to integrate with the PayerURL Payment Gateway using a simple PHP function. It's designed for systems where server-to-server communication is preferred over frontend SDKs.
+# PayerURL — Payment Request API
 
-## 📌 Function: payment($invoiceId, $amount, $currency = 'usd', $data)
-###### Handles the payment process with PayerURL API and redirects the customer to the payment page.
+Send a payment request to PayerURL and redirect the customer to the checkout page.
 
-## ✅ Required Parameters
-| Name | Type | Required | Description |
-| --- | --- | --- | --- |
-| $invoiceId | string | ✅ | Unique invoice or order ID. |
-| $amount | int | ✅ | Payment amount (in smallest currency unit, e.g., cents). |
-| $currency | string | ❌ | Currency code (e.g., usd, bdt). Default: usd. |
-| $data | array | ✅ | Contains customer info, redirect URLs, and API credentials. |
+> Get your API keys: https://dash.payerurl.com/profile/api-management
 
+---
 
-## 🔑 $data Array Structure
+## Requirements
 
-~~~php
-$data = [
-    'first_name'   => 'John',             // Optional
-    'last_name'    => 'Doe',              // Optional
-    'email'        => 'john@example.com', // Optional
-    'redirect_url' => 'https://yourdomain.com/payment-success',
-    'notify_url'   => 'https://yourdomain.com/api/payment-notify',
-    'cancel_url'   => 'https://yourdomain.com/checkout',
-    'public_key'   => 'your_public_key',
-    'secret_key'   => 'your_secret_key',
+- PHP 7.4+
+- Extensions: `curl`, `json`
+
+---
+
+## Quick Start
+
+```php
+// 1. Set your order details
+$invoiceid = floor(microtime(true) * 1000); // unique order ID
+$amount    = 120.00;
+$currency  = 'usd';
+
+// 2. Set customer info
+$billing_fname = 'John';
+$billing_lname = 'Doe';
+$billing_email = 'john@example.com';
+
+// 3. Set URLs
+$redirect_to = 'https://yoursite.com/payment-success';
+$notify_url  = 'https://yoursite.com/payment-notify';
+$cancel_url  = 'https://yoursite.com/checkout';
+
+// 4. Set API keys
+$payerurl_public_key = 'your_public_key';
+$payerurl_secret_key = 'your_secret_key';
+```
+
+---
+
+## Request Parameters
+
+| Parameter       | Type   | Required | Description                                          |
+|-----------------|--------|----------|------------------------------------------------------|
+| `order_id`      | int    | ✅       | Unique order ID. Must never repeat.                  |
+| `amount`        | float  | ✅       | Total order amount (e.g. `120.00`)                   |
+| `currency`      | string | ✅       | Lowercase currency code (e.g. `usd`, `bdt`)         |
+| `items`         | array  | ✅       | List of order items (see below)                      |
+| `billing_fname` | string | ✅       | Customer first name                                  |
+| `billing_lname` | string | ✅       | Customer last name                                   |
+| `billing_email` | string | ✅       | Customer email address                               |
+| `redirect_to`   | string | ✅       | URL to redirect after successful payment             |
+| `notify_url`    | string | ✅       | URL where PayerURL sends the payment callback        |
+| `cancel_url`    | string | ✅       | URL to redirect if customer cancels                  |
+| `type`          | string | ✅       | Always set to `php`                                  |
+
+---
+
+## Items Array
+
+Each item in the `$items` array must follow this structure:
+
+```php
+$items = [
+    [
+        'name'  => 'Order_Item_Name', // No spaces — use underscore
+        'qty'   => '2',               // String, integer value
+        'price' => '60.00',           // String, float value
+    ]
 ];
-~~~
+```
 
-## 🔑GET API KEY
-Get your API key : https://dash.payerurl.com/profile/get-api-credentials
-<img src="https://raw.githubusercontent.com/RashiqulRony/rony.mmj/refs/heads/master/payerurl.png">
+| Field   | Type   | Description                              |
+|---------|--------|------------------------------------------|
+| `name`  | string | Item name. **No spaces** — use `_`       |
+| `qty`   | string | Quantity as string (e.g. `"2"`)          |
+| `price` | string | Unit price as string (e.g. `"60.00"`)   |
 
+---
 
+## Authentication
 
-## 🚀 How It Works
-1. Collect user and order info on your platform.
-2. Call the payment() function with required details.
-3. User is redirected to PayerURL payment page.
-4. After payment:
-    * User is redirected to redirect_url.
-    * Your backend receives a callback at notify_url with transaction details.
-    * On cancellation, user is returned to cancel_url.
+Parameters are sorted, URL-encoded, then signed with HMAC-SHA256. The result is base64-encoded and sent as a Bearer token:
 
+```php
+ksort($args);
+$args      = http_build_query($args);
+$signature = hash_hmac('sha256', $args, $payerurl_secret_key);
+$authStr   = base64_encode($payerurl_public_key . ':' . $signature);
 
-## 🔐 Authentication
-Authentication is done via HMAC SHA256 signature using your secret key. The request is then base64-encoded and added as a Bearer token.
+// Sent in header as:
+// Authorization: Bearer <authStr>
+```
 
+---
 
-## 🧪 Sample Usage
-###### Download `PayerUrlRequest.php` Class and using your any php project. Example: 
+## API Endpoint
 
-~~~php
-require_once 'PayerUrlRequest.php';
-$request = new PayerUrlRequest();
+```
+POST https://api-v2.payerurl.com/api/payment
+Content-Type: application/x-www-form-urlencoded;charset=UTF-8
+Authorization: Bearer <authStr>
+```
 
-$invoiceid = floor(microtime(true) * 1000);
-$amount = 1000; // $10.00
-$currency = 'usd';
+---
 
-$data = [
-    'first_name' => 'Alice',
-    'last_name' => 'Smith',
-    'email' => 'alice@example.com',
-    'redirect_url' => 'https://yoursite.com/payment-success',
-    'notify_url' => 'https://yoursite.com/api/payment-notify',
-    'cancel_url' => 'https://yoursite.com/cart',
-    'public_key' => 'pk_live_xxxxxx',
-    'secret_key' => 'sk_live_xxxxxx',
+## Response & Redirect
+
+On success (HTTP 200), the API returns a `redirectTO` URL. Redirect the customer to it:
+
+```php
+if ($httpCode === 200 && !empty($response->redirectTO)) {
+    header('Location: ' . $response->redirectTO);
+    exit();
+}
+```
+
+### Success Response
+
+```json
+{
+  "redirectTO": "https://pay.payerurl.com/checkout/abc123"
+}
+```
+
+### Failure Response
+
+```json
+{
+  "status": false,
+  "message": "Invalid signature."
+}
+```
+
+---
+
+## URL Roles
+
+| URL           | When It's Called                                          |
+|---------------|-----------------------------------------------------------|
+| `redirect_to` | Customer is sent here after successful payment            |
+| `notify_url`  | PayerURL POSTs payment details here (server-to-server)    |
+| `cancel_url`  | Customer is sent here if they cancel the payment          |
+
+> ⚠️ `notify_url` must be a **publicly accessible HTTPS URL**. Localhost will not work.
+
+---
+
+## Full Example
+
+```php
+<?php
+$invoiceid           = floor(microtime(true) * 1000);
+$amount              = 120.00;
+$currency            = 'usd';
+$billing_fname       = 'John';
+$billing_lname       = 'Doe';
+$billing_email       = 'john@example.com';
+$redirect_to         = 'https://yoursite.com/payment-success';
+$notify_url          = 'https://yoursite.com/payment-notify';
+$cancel_url          = 'https://yoursite.com/checkout';
+$payerurl_public_key = 'your_public_key';
+$payerurl_secret_key = 'your_secret_key';
+
+$items = [
+    [
+        'name'  => 'Product_Name',
+        'qty'   => '10',
+        'price' => '12.00',
+    ]
 ];
 
-$request->payment($invoiceId, $amount, $currency, $data);
-~~~
+$args = [
+    'order_id'      => $invoiceid,
+    'amount'        => $amount,
+    'items'         => $items,
+    'currency'      => strtolower(trim($currency)),
+    'billing_fname' => $billing_fname,
+    'billing_lname' => $billing_lname,
+    'billing_email' => $billing_email,
+    'redirect_to'   => $redirect_to,
+    'notify_url'    => $notify_url,
+    'cancel_url'    => $cancel_url,
+    'type'          => 'php',
+];
 
+ksort($args);
+$args      = http_build_query($args);
+$signature = hash_hmac('sha256', $args, $payerurl_secret_key);
+$authStr   = base64_encode($payerurl_public_key . ':' . $signature);
+
+$ch = curl_init();
+curl_setopt_array($ch, [
+    CURLOPT_URL            => 'https://api-v2.payerurl.com/api/payment',
+    CURLOPT_POST           => true,
+    CURLOPT_HEADER         => false,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POSTFIELDS     => $args,
+    CURLOPT_HTTPHEADER     => [
+        'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
+        'Authorization: Bearer ' . $authStr,
+    ],
+]);
+
+$response = json_decode(curl_exec($ch));
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($httpCode === 200 && !empty($response->redirectTO)) {
+    header('Location: ' . $response->redirectTO);
+}
+exit();
+```
+
+---
+
+## Security Notes
+
+- Never expose your `secret_key` in client-side code or public repositories
+- Use environment variables for credentials in production:
+
+```php
+$payerurl_public_key = $_ENV['PAYERURL_PUBLIC_KEY'];
+$payerurl_secret_key = $_ENV['PAYERURL_SECRET_KEY'];
+```
 
 # PayerURL — Withdraw Request API
 

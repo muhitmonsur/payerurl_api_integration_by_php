@@ -55,7 +55,7 @@ Authentication is done via HMAC SHA256 signature using your secret key. The requ
 require_once 'PayerUrlRequest.php';
 $request = new PayerUrlRequest();
 
-$invoiceId = 'INV-1001';
+$invoiceid = floor(microtime(true) * 1000);
 $amount = 1000; // $10.00
 $currency = 'usd';
 

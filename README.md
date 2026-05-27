@@ -224,6 +224,168 @@ $payerurl_public_key = $_ENV['PAYERURL_PUBLIC_KEY'];
 $payerurl_secret_key = $_ENV['PAYERURL_SECRET_KEY'];
 ```
 
+
+# PayerURL — Payment Notify (Callback) Handler
+
+PayerURL sends a `POST` request to your `notify_url` after every payment attempt. This file handles that callback, verifies the signature, and lets you update your order status.
+
+---
+
+## How It Works
+
+1. PayerURL POSTs payment data to your `notify_url`
+2. Your script verifies the public key and HMAC signature
+3. If everything checks out → update your order and return `2040`
+4. If anything fails → return the appropriate error code
+
+---
+
+## Setup
+
+Copy `payerurl_payment_response.php` to your server and set your API keys:
+
+```php
+$payerurl_public_key = 'your_public_key';
+$payerurl_secret_key = 'your_secret_key';
+```
+
+> ⚠️ Your `notify_url` must be a **publicly accessible HTTPS URL**. Localhost will not receive callbacks.
+
+---
+
+## POST Fields Received
+
+PayerURL sends these fields in the POST body:
+
+| Field                  | Type   | Description                                      |
+|------------------------|--------|--------------------------------------------------|
+| `order_id`             | string | Your original order ID                           |
+| `transaction_id`       | string | PayerURL internal transaction ID                 |
+| `ext_transaction_id`   | string | Blockchain transaction hash                      |
+| `status_code`          | int    | Payment status (see table below)                 |
+| `note`                 | string | Additional notes from PayerURL                   |
+| `confirm_rcv_amnt`     | float  | Confirmed received amount in fiat                |
+| `confirm_rcv_amnt_curr`| string | Fiat currency (e.g. `usd`)                       |
+| `coin_rcv_amnt`        | float  | Received amount in crypto                        |
+| `coin_rcv_amnt_curr`   | string | Crypto currency (e.g. `USDT`)                    |
+| `txn_time`             | string | Transaction timestamp                            |
+| `authStr`              | string | Base64 auth string (fallback if no header)       |
+
+---
+
+## Status Codes
+
+| `status_code` | Meaning             | Action                          |
+|---------------|---------------------|---------------------------------|
+| `200`         | Payment successful  | ✅ Update order to paid         |
+| `20000`       | Payment cancelled   | ❌ Mark order as cancelled      |
+| Other         | Payment incomplete  | ❌ Do not fulfil the order      |
+
+---
+
+## Authentication
+
+PayerURL authenticates via two methods — the script handles both automatically:
+
+**Method 1 — Authorization Header (preferred):**
+```
+Authorization: Bearer <base64(public_key:signature)>
+```
+
+**Method 2 — POST field fallback:**
+```
+authStr = <base64(public_key:signature)>
+```
+
+After decoding, the script:
+1. Checks `public_key` matches your stored key
+2. Rebuilds the HMAC-SHA256 signature from POST data
+3. Compares it with the received signature using `hash_equals()`
+
+---
+
+## Response Codes You Return
+
+Your script must return a JSON response so PayerURL knows the result:
+
+| Status | Message                  | When to Return                         |
+|--------|--------------------------|----------------------------------------|
+| `2040` | Order data (success)     | Signature verified, order updated      |
+| `2030` | Public key doesn't match | Public key mismatch                    |
+| `2030` | Signature not matched    | HMAC verification failed               |
+| `2050` | Transaction ID not found | `transaction_id` missing from POST     |
+| `2050` | Order ID not found       | `order_id` missing from POST           |
+| `2050` | Order not complete       | `status_code` is not `200`             |
+| `20000`| Order Cancelled          | `status_code` is `20000`               |
+
+### Success Response Example
+
+```json
+{
+  "status": 2040,
+  "message": {
+    "order_id": "1001",
+    "transaction_id": "TXN-abc123",
+    "ext_transaction_id": "0xabc...",
+    "status_code": "200",
+    "confirm_rcv_amnt": "120.00",
+    "confirm_rcv_amnt_curr": "usd",
+    "coin_rcv_amnt": "120.00",
+    "coin_rcv_amnt_curr": "USDT",
+    "txn_time": "2024-01-01 12:00:00"
+  }
+}
+```
+
+---
+
+## Where to Add Your Logic
+
+Find the `YOUR CODE HERE` comment after the final security check and update your order there:
+
+```php
+// ✅ All security checks passed at this point
+$data = ['status' => 2040, 'message' => $GETDATA];
+
+// YOUR CODE HERE — e.g.:
+// DB::update('orders', ['status' => 'paid'], ['id' => $GETDATA['order_id']]);
+// sendConfirmationEmail($GETDATA['billing_email']);
+
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode($data);
+exit();
+```
+
+---
+
+## Logging
+
+The script automatically logs all callback data to `payerurl.log` in the same directory:
+
+```php
+$fh = fopen('payerurl.log', 'a');
+fwrite($fh, json_encode($data));
+fclose($fh);
+```
+
+You can change the filename or path to suit your setup.
+
+---
+
+## Security Checklist
+
+- [x] Public key verified before processing
+- [x] HMAC-SHA256 signature verified with `hash_equals()` (timing-safe)
+- [x] `transaction_id` and `order_id` presence validated
+- [x] `status_code` checked before fulfilling order
+- [ ] Check that `order_id` exists in **your** database
+- [ ] Check that the order has not already been marked as paid (prevent replay)
+- [ ] Validate `confirm_rcv_amnt` matches your expected order amount
+
+
+
+
+
 # PayerURL — Withdraw Request API
 
 A PHP integration for sending crypto withdrawal requests via the [PayerURL](https://payerurl.com) API.

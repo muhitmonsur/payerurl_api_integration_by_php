@@ -27,7 +27,7 @@ $params = [
     'coin_address' => 'your_provided_wallet_address',
     'coin_Network' => '1',                   // 1 = TRC20-USDT
     'rcvr_id'      => '4551',               // Customer ID in your system
-    'rcvr_email'   => 'mirmonsor@gmail.com', // Customer email in your system
+    'rcvr_email'   => 'test@email.com', // Customer email in your system
 ];
 
 // ── Send Request ───────────────────────────────────────────────
